@@ -166,6 +166,7 @@
 .h37px{height:37px !important;}
 .h45px{height:45px !important;}
 .h48px{height:48px !important;}
+.h50px{height:50px !important;}
 .h60px{height:60px !important;}
 .h60px{height:60px !important;}
 .h70px{height:70px !important;}
@@ -219,9 +220,9 @@
 .bg_gray_f5{background: #F5F5F5 !important;color:#666;}
 .bg-set{ position: fixed;width: 100%;height: 100%;background-color: #f4f4f4;}
 .bg_gray_orange{background:#fef2ee !important;}
-.bg_default{background:#eb5d46 !important;color:#fff;}
+.bg_default{background:#e83edb !important;color:#fff;}
 .bg_orange_gray{background:#f2806d;}
-.bg_default2{background-image: linear-gradient(to right,#f58c4a,#f54c4a);color:#fff;}
+.bg_default2{background-image: linear-gradient(to right,#91268a,#e83edb);color:#fff;}
 .bg_black{background:#111;color:#fff !important;border:none !important;}
 .bg_black2{background:#232334;color:#fff !important;border:none !important;}
 .bg_blue{background:#445DFF;color:#fff !important;border:none !important;}
@@ -241,8 +242,10 @@
 .pic-18{width:18px !important;height:18px !important;}
 .pic-20{width:20px  !important;height:20px !important;}
 .pic-25{width:25px;height:25px;}
+.pic-28{width:28px;height:28px;}
 .pic-30{width:30px !important;height:30px !important;}
 .pic-40{width:40px !important;height:40px !important;}
+.pic-45{width:45px !important;height:45px !important;}
 .pic-50{width:50px !important;height:50px !important;}
 .pic-52{width:52px !important;height:52px !important;}
 .pic-60{width:60px !important;height:60px !important;}
@@ -378,7 +381,7 @@ a.fred:hover{color:#c30;}
 .but_gray_green::after{border:none;font-size: 14px;}
 .but_orange{background: #ef9443;color:#fff;}
 .but_gray{background:#fff;color:#666;}
-.but_default{background: #eb5d46;color:#fff;}
+.but_default{background: #e83edb;color:#fff;}
 .but_blue{background:#445DFF;color:#fff;font-size: 16px;;}
 .but_blue_small{height:23px;border-radius: 20px;color:#fff;background:#445DFF;padding:0px 15px;display: inline-block; text-align: center;line-height: 23px;font-size: 12px;}
 .but_blue_small2{height:23px;border-radius: 20px;color:#445DFF;border:1px solid #445DFF;background:#fff;padding:0px 15px; text-align: center;line-height: 23px;font-size: 12px;}

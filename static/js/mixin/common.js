@@ -2,6 +2,9 @@ import config from '../config.js';
 import {statics} from '../statics.js';
 
 import {mapState} from 'vuex';
+
+import {FreadFile,FwriteFile} from '@/utils/readFile.js'
+
 export const common = {
 	data(){
 		return {
@@ -53,9 +56,61 @@ export const common = {
 			let style = 'border: 1px solid '+this.tempColor+';';
 			style+='color:'+this.tempColor+';';
 			return style;
-		}
+		},
+		
 	},
 	methods:{
+		 timeAgo(timestamp) {
+		   timestamp=timestamp*1000;
+		  const now = Date.now();
+		  const secondsPast = Math.floor((now - timestamp) / 1000);
+		
+		  if (secondsPast < 60) {
+		    return '刚刚';
+		  }
+		  if (secondsPast < 3600) {
+		    const minutesPast = Math.floor(secondsPast / 60);
+		    return minutesPast + ' 分钟前';
+		  }
+		  if (secondsPast < 86400) {
+		    const hoursPast = Math.floor(secondsPast / 3600);
+		    return hoursPast + ' 小时前';
+		  }
+		  if (secondsPast < 2592000) { // 30 天内
+		    const daysPast = Math.floor(secondsPast / 86400);
+		    return daysPast + ' 天前';
+		  }
+		 
+		 return this.date(timestamp,'MM-dd');
+		},
+		arraysEqual(arr1, arr2) {
+		  if (arr1.length !== arr2.length) {console.log('compare111');
+		    return false;
+		  }
+		  for (let i = 0; i < arr1.length; i++) {
+		    if (arr1[i] !== arr2[i]) {
+				console.log('compare222',arr1[i],arr2[i]);
+		      return false;
+		    }
+		  }
+		  return true;
+		},
+		arraysEqual_3d(arr1, arr2) {
+		  if (arr1.length !== arr2.length) {console.log('compare111');
+		    return false;
+		  }
+		  for (let i = 0; i < arr1.length; i++) {
+		    for (var i2 in arr1[i]) {
+				var k1=arr1[i][i2];
+				var k2=arr2[i][i2];//console.log('compare 333 one',k1,k2);
+				if (k1 != k2 ){
+					console.log('compare333',k1,k2);
+				    return false;
+				}
+			}
+		  }
+		  return true;
+		},
 		time(){
 			var timestamp = Date.parse(new Date());
 			return timestamp/1000;
@@ -128,6 +183,11 @@ export const common = {
 					url:url
 				})
 				return;
+			}else if(url.match(/\/pages\/client\/chat_list/)){
+				uni.switchTab({
+					url:url
+				})
+				return;
 			}else if(url.match(/\/pages\/client\/member\/index/)){
 				uni.switchTab({
 					url:url
@@ -183,6 +243,9 @@ export const common = {
 		            case 'yyyy-MM':
 		                timeDate = yer + '-' + month;
 		                break;
+					case 'MM-dd':
+					    timeDate = month + '-' + day;
+					    break;	
 		            case 'yyyy-MM-dd':
 		                timeDate = yer + '-' + month + '-' + day;
 		                break;
@@ -210,6 +273,14 @@ export const common = {
 		        return ''
 		    }
 		},
+		 getFormattedDate() {
+		    const date = new Date();
+		    const year = date.getFullYear();
+		    const month = String(date.getMonth() + 1).padStart(2, '0');
+		    const day = String(date.getDate()).padStart(2, '0');
+		    
+		    return `${year}${month}${day}`;
+		},
 		// 点击图片
 		bindImg(url) {
 			if(url){
@@ -221,6 +292,87 @@ export const common = {
 				})
 			}
 		},
+		
+		upload_file(filePath,callback) {
+		  const fileSuffix = filePath.substring(filePath.lastIndexOf('.') + 1);
+		  console.log('File Suffix:', fileSuffix);
+		  this.getPresignedUrl(filePath,callback,fileSuffix);
+		},
+		chooseImage(callback) {
+		  uni.chooseImage({
+			count: 1,
+			success: (res) => {
+			  const filePath = res.tempFilePaths[0];
+			  const fileSuffix = filePath.substring(filePath.lastIndexOf('.') + 1);
+			  console.log('File Suffix:', fileSuffix);
+			  this.getPresignedUrl(filePath,callback,fileSuffix);
+			},
+			fail: (err) => {
+			  console.error('file selection failed:', err);
+			}
+		  });
+		},
+		
+		getPresignedUrl(filePath,callback,fileSuffix) {
+		  // 调用 ThinkPHP 服务器生成预签名 URL 的接口
+		  uni.request({
+			url: config.apiUrl+'/api/common/s3generatePresignedUrl', // 替换为你的服务器端 API 地址
+			method: 'POST',
+			data: {
+			  fileName: `uploads/${this.getFormattedDate()}/${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileSuffix}`
+			},
+			success: (res) => {
+				console.log(res);
+			  const attributes = res.data.attributes;
+				const inputs = res.data.inputs;
+				this.uploadToS3(filePath, attributes, inputs,callback);
+			},
+			fail: (err) => {
+			  console.error('Failed to get presigned URL:', err);
+			}
+		  });
+		},
+		
+		uploadToS3(filePath,  attributes, inputs,callback) {
+		     
+				inputs['acl']='public-read';
+				inputs['success_action_status']='201';
+		  
+				uni.uploadFile({
+				  url: attributes.action,
+				  filePath: filePath,
+				  name: 'file',
+				  formData: inputs,
+				  success: (uploadFileRes) => {
+					if (uploadFileRes.statusCode === 201) {
+					  console.log('Successfully uploaded file');
+					 //  uni.showToast({
+						// title: 'Upload successful',
+						// icon: 'success'
+					 //  });
+					  this.imageUrl = attributes.action + '/' + inputs.key; // 获取上传后文件的 URL
+					  if(callback){
+						  console.log(this.imageUrl)
+						  callback(this.imageUrl);
+					  }
+					} else {
+					  console.error('Error uploading file:', uploadFileRes);
+					  uni.showToast({
+						title: 'Upload failed',
+						icon: 'none'
+					  });
+					}
+				  },
+				  fail: (err) => {
+					console.error('Upload failed:', err);
+					uni.showToast({
+					  title: 'Upload failed',
+					  icon: 'none'
+					});
+				  }
+				});
+		},
+		
 		
 		
 		async upload_local_img(callback){

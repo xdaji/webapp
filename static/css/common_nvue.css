@@ -51,6 +51,7 @@
 .pic-25{width:25px;height:25px;}
 .pic-30{width:30px !important;height:30px !important;}
 .pic-40{width:40px !important;height:40px !important;}
+.pic-45{width:45px !important;height:45px !important;}
 .pic-50{width:50px !important;height:50px !important;}
 .pic-52{width:52px !important;height:52px !important;}
 .pic-60{width:60px !important;height:60px !important;}
@@ -160,9 +161,9 @@
  .bg_gray_f5{background: #F5F5F5 !important;color:#666;}
  .bg-set{ position: fixed;width: 100%;height: 100%;background-color: #f4f4f4;}
  .bg_gray_orange{background:#fef2ee !important;}
- .bg_default{background:#eb5d46 !important;color:#fff;}
+ .bg_default{background:#e83edb  !important;color:#fff;}
  .bg_orange_gray{background:#f2806d;}
- .bg_default2{background-image: linear-gradient(to right,#f58c4a,#f54c4a);color:#fff;}
+ .bg_default2{background-image: linear-gradient(to right,#f58c4a,#e83edb);color:#fff;}
  .bg_black{background:#111;color:#fff !important;border:none !important;}
  .bg_black2{background:#232334;color:#fff !important;border:none !important;}
  .bg_blue{background:#445DFF;color:#fff !important;border:none !important;}
