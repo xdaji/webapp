@@ -281,6 +281,30 @@ export const common = {
 		    
 		    return `${year}${month}${day}`;
 		},
+		del_item(arrdata,item){
+			for(var key in arrdata){
+				if(item==arrdata[key]){
+					arrdata.splice(key,1);
+				}
+			}	
+			return arrdata;
+		},
+		get_field_arr(arrdata,name){
+			var arr=[];
+			for(var key in arrdata){
+				console.log(key);
+				arr.push(arrdata[key][name]);
+			}	
+			return arr;
+		},
+		del_key(arrdata,index){
+			for(var key in arrdata){
+				if(index==key){
+					arrdata.splice(key,1);
+				}
+			}	
+			return arrdata;
+		},
 		// 点击图片
 		bindImg(url) {
 			if(url){
@@ -302,6 +326,9 @@ export const common = {
 		  uni.chooseImage({
 			count: 1,
 			success: (res) => {
+				uni.showLoading({
+					title:'上传中..'
+				})
 			  const filePath = res.tempFilePaths[0];
 			  const fileSuffix = filePath.substring(filePath.lastIndexOf('.') + 1);
 			  console.log('File Suffix:', fileSuffix);
@@ -350,9 +377,10 @@ export const common = {
 						// title: 'Upload successful',
 						// icon: 'success'
 					 //  });
-					  this.imageUrl = attributes.action + '/' + inputs.key; // 获取上传后文件的 URL
+					  this.imageUrl = config.s3Url + '/' + inputs.key; // 获取上传后文件的 URL
 					  if(callback){
 						  console.log(this.imageUrl)
+						  uni.hideLoading();
 						  callback(this.imageUrl);
 					  }
 					} else {
