@@ -306,13 +306,20 @@ export const common = {
 			return arrdata;
 		},
 		// 点击图片
-		bindImg(url) {
+		bindImg(url,current) {
 			if(url){
-				var urls=[url];
+				var urls=0;
+				if(typeof url=='string'){
+					urls=[url];
+				}else{
+					urls=url;
+				}
+				
+				 
 				console.log(url)
 				uni.previewImage({
 					urls: urls,
-					current: 0
+					current: current?current:0
 				})
 			}
 		},
@@ -326,78 +333,96 @@ export const common = {
 		  uni.chooseImage({
 			count: 1,
 			success: (res) => {
-				uni.showLoading({
-					title:'上传中..'
-				})
-			  const filePath = res.tempFilePaths[0];
-			  const fileSuffix = filePath.substring(filePath.lastIndexOf('.') + 1);
-			  console.log('File Suffix:', fileSuffix);
-			  this.getPresignedUrl(filePath,callback,fileSuffix);
+				$this.choose_do(res,callback)
 			},
 			fail: (err) => {
 			  console.error('file selection failed:', err);
 			}
 		  });
 		},
-		
-		getPresignedUrl(filePath,callback,fileSuffix) {
-		  // 调用 ThinkPHP 服务器生成预签名 URL 的接口
-		  uni.request({
-			url: config.apiUrl+'/api/common/s3generatePresignedUrl', // 替换为你的服务器端 API 地址
-			method: 'POST',
-			data: {
-			  fileName: `uploads/${this.getFormattedDate()}/${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileSuffix}`
-			},
+		async choose_do (res,callback){
+			 uni.showLoading({
+			 	title:'上传中..'
+			 })
+			 const filePath = res.tempFilePaths[0];
+			 const fileSuffix = filePath.substring(filePath.lastIndexOf('.') + 1);
+			 console.log('File Suffix:', fileSuffix);
+			 const postdata={
+			 	type:'v2',
+			 	 fileName: `uploads/${this.getFormattedDate()}/${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileSuffix}`
+			 }
+			 const res2=await uni.$api.chat.s3generatePresignedUrl(postdata)
+			 console.log(res);
+			 const attributes = res2.attributes;
+			 const inputs = res2.inputs;
+			 const res3=await this.uploadToS3(filePath, attributes, inputs);
+			 callback(res3);
+			 uni.hideLoading();
+		},
+		async chooseMoreImage(callback) {
+			var $this=this;
+		  uni.chooseImage({
+			count: 9,
 			success: (res) => {
-				console.log(res);
-			  const attributes = res.data.attributes;
-				const inputs = res.data.inputs;
-				this.uploadToS3(filePath, attributes, inputs,callback);
+				$this.choose_do_for_more(res,callback)
+				
 			},
 			fail: (err) => {
-			  console.error('Failed to get presigned URL:', err);
+			  console.error('file selection failed:', err);
 			}
 		  });
+		  
+		},
+		async choose_do_for_more (res,callback){
+			  for(var i=0;i<res.tempFilePaths.length;i++){
+				uni.showLoading({
+					title:'第'+(i+1)+'/'+res.tempFilePaths.length+'张上传中..'
+				})
+				const filePath = res.tempFilePaths[i];
+				const fileSuffix = filePath.substring(filePath.lastIndexOf('.') + 1);
+				console.log('File Suffix:', fileSuffix);
+				const postdata={
+					type:'v2',
+					 fileName: `uploads/${this.getFormattedDate()}/${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileSuffix}`
+				}
+				const res2=await uni.$api.chat.s3generatePresignedUrl(postdata)
+				console.log(res);
+				const attributes = res2.attributes;
+				const inputs = res2.inputs;
+				const res3=await this.uploadToS3(filePath, attributes, inputs);
+				callback(res3);
+				uni.hideLoading();
+			  }
 		},
 		
-		uploadToS3(filePath,  attributes, inputs,callback) {
-		     
+		
+		async uploadToS3(filePath,  attributes, inputs) {
 				inputs['acl']='public-read';
 				inputs['success_action_status']='201';
-		  
-				uni.uploadFile({
-				  url: attributes.action,
-				  filePath: filePath,
-				  name: 'file',
-				  formData: inputs,
-				  success: (uploadFileRes) => {
-					if (uploadFileRes.statusCode === 201) {
-					  console.log('Successfully uploaded file');
-					 //  uni.showToast({
-						// title: 'Upload successful',
-						// icon: 'success'
-					 //  });
-					  this.imageUrl = config.s3Url + '/' + inputs.key; // 获取上传后文件的 URL
-					  if(callback){
-						  console.log(this.imageUrl)
-						  uni.hideLoading();
-						  callback(this.imageUrl);
+				return new Promise((resolve, reject) => {
+					uni.uploadFile({
+					  url: attributes.action,
+					  filePath: filePath,
+					  name: 'file',
+					  formData: inputs,
+					  success: (uploadFileRes) => {
+						if (uploadFileRes.statusCode === 201) {
+							console.log('Successfully uploaded file');
+							const imageUrl = config.s3Url + '/' + inputs.key; // 获取上传后文件的 URL
+							resolve(imageUrl);
+						} else {
+						  console.error('Error uploading file:', uploadFileRes);
+						  
+						}
+					  },
+					  fail: (err) => {
+						console.error('Upload failed:', err);
+						uni.showToast({
+						  title: 'Upload failed',
+						  icon: 'none'
+						});
 					  }
-					} else {
-					  console.error('Error uploading file:', uploadFileRes);
-					  uni.showToast({
-						title: 'Upload failed',
-						icon: 'none'
-					  });
-					}
-				  },
-				  fail: (err) => {
-					console.error('Upload failed:', err);
-					uni.showToast({
-					  title: 'Upload failed',
-					  icon: 'none'
 					});
-				  }
 				});
 		},
 		
