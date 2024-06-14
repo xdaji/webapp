@@ -324,12 +324,39 @@ export const common = {
 			}
 		},
 		
-		upload_file(filePath,callback) {
+		async upload_file(filePath,callback) {
 		  const fileSuffix = filePath.substring(filePath.lastIndexOf('.') + 1);
 		  console.log('File Suffix:', fileSuffix);
-		  this.getPresignedUrl(filePath,callback,fileSuffix);
+		  const postdata={
+		  	 type:'v2',
+		  	 fileName: `uploads/${this.getFormattedDate()}/${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileSuffix}`
+		  }
+		  const res2=await uni.$api.chat.s3generatePresignedUrl(postdata)
+		 const attributes = res2.attributes;
+		 const inputs = res2.inputs;
+		 const res3=await this.uploadToS3(filePath, attributes, inputs);
+		 callback(res3);
+		 uni.hideLoading();
+		},
+		
+		chooseVideo(callback) {
+			var $this=this;
+		  uni.chooseVideo({
+			count: 1,
+			mediaType: ['image','video'],
+			  sourceType: ['album', 'camera'],
+			compressed:true,
+			maxDuration:60,
+			success: (res) => {
+				$this.choose_do(res,callback)
+			},
+			fail: (err) => {
+			  console.error('file selection failed:', err);
+			}
+		  });
 		},
 		chooseImage(callback) {
+		  var $this=this;
 		  uni.chooseImage({
 			count: 1,
 			success: (res) => {
@@ -340,11 +367,17 @@ export const common = {
 			}
 		  });
 		},
-		async choose_do (res,callback){
+		async choose_do(res,callback){
 			 uni.showLoading({
 			 	title:'上传中..'
 			 })
-			 const filePath = res.tempFilePaths[0];
+			 console.log('choose resultttttttt', res);
+			 let filePath='';
+			 if(typeof res.tempFilePaths!='undefined'){
+				filePath = res.tempFilePaths[0];
+			 }else{
+				 filePath=res.tempFilePath;
+			 }
 			 const fileSuffix = filePath.substring(filePath.lastIndexOf('.') + 1);
 			 console.log('File Suffix:', fileSuffix);
 			 const postdata={
