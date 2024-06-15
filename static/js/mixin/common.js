@@ -378,8 +378,11 @@ export const common = {
 			 }else{
 				 filePath=res.tempFilePath;
 			 }
-			 const fileSuffix = filePath.substring(filePath.lastIndexOf('.') + 1);
+			 let fileSuffix = filePath.substring(filePath.lastIndexOf('.') + 1);
 			 console.log('File Suffix:', fileSuffix);
+			 if(fileSuffix.match(/blob/i)){
+			 	fileSuffix='jpg';
+			 }
 			 const postdata={
 			 	type:'v2',
 			 	 fileName: `uploads/${this.getFormattedDate()}/${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileSuffix}`
@@ -412,8 +415,11 @@ export const common = {
 					title:'第'+(i+1)+'/'+res.tempFilePaths.length+'张上传中..'
 				})
 				const filePath = res.tempFilePaths[i];
-				const fileSuffix = filePath.substring(filePath.lastIndexOf('.') + 1);
+				let fileSuffix = filePath.substring(filePath.lastIndexOf('.') + 1);
 				console.log('File Suffix:', fileSuffix);
+				if(fileSuffix.match(/blob/i)){
+					fileSuffix='jpg';
+				}
 				const postdata={
 					type:'v2',
 					 fileName: `uploads/${this.getFormattedDate()}/${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileSuffix}`
