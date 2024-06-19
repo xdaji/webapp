@@ -345,7 +345,7 @@ export const common = {
 			count: 1,
 			mediaType: ['image','video'],
 			  sourceType: ['album', 'camera'],
-			compressed:true,
+			compressed:false,
 			maxDuration:60,
 			success: (res) => {
 				$this.choose_do(res,callback)
@@ -369,6 +369,7 @@ export const common = {
 		},
 		async choose_do(res,callback){
 			 uni.showLoading({
+				 mask:true,
 			 	title:'上传中..'
 			 })
 			 console.log('choose resultttttttt', res);
@@ -412,6 +413,7 @@ export const common = {
 		async choose_do_for_more (res,callback){
 			  for(var i=0;i<res.tempFilePaths.length;i++){
 				uni.showLoading({
+					mask:true,
 					title:'第'+(i+1)+'/'+res.tempFilePaths.length+'张上传中..'
 				})
 				const filePath = res.tempFilePaths[i];
